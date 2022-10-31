@@ -40,7 +40,7 @@ inputs:
 outputs:
   webapp-url:
     description: "Web Application url"
-    value: ${{ steps.webapp.outputs.output }}
+    value: https://${{ steps.webapp.outputs.output }}
 runs:
   using: "composite"
   steps:
@@ -65,4 +65,4 @@ runs:
         compact: true
         raw-output: true
         input: ${{ steps.spacelift.outputs.outputs }}
-        script: 'map(select(.id == "webapp_url")) | .[0].value'
+        script: 'map(select(.id == "full_domain")) | .[0].value'
