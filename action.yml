@@ -11,6 +11,12 @@ inputs:
   ssm-path:
     description: SSM path
     required: false
+  region:
+    description: AWS Region
+    required: true
+  namespace:
+    description: Namespace
+    required: false
   operation:
     description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
     required: true
@@ -49,6 +55,8 @@ runs:
         name: ${{ inputs.ssm-path }}
         value: ${{ inputs.image }}:${{ inputs.image-tag }}
         description: Image deploy on ecs
+      env:
+        AWS_REGION: ${{ inputs.region }}
 
     - uses: cloudposse/github-action-spacelift-deploy@0.1.0
       id: spacelift
