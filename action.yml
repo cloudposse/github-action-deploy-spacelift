@@ -1,23 +1,76 @@
-name: 'Example composite GitHub action'
-description: 'Example composite GitHub action'
+name: 'Deploy ECS'
+description: 'Deploy on ECS with Spacelift'
 author: hello@cloudposse.com
 branding:
-  icon: 'file'
+  icon: 'file-text'
   color: 'white'
 inputs:
-  param1:
+  stack:
     required: true
-    description: "Input parameter placeholder"
-    default: "true"
+    description: "Name"
+  ssm-path:
+    description: SSM path
+    required: false
+  region:
+    description: AWS Region
+    required: true
+  namespace:
+    description: Namespace
+    required: false
+  operation:
+    description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
+    required: true
+    default: deploy
+  image:
+    description: Docker image
+    required: true
+  image-tag:
+    description: Docker image tag
+    required: true
+  debug:
+    description: Debug mode
+    default: 'false'
+    required: false
+  organization:
+    required: true
+    description: "Spacelift organization"
+  api_key_id:
+    required: true
+    description: "Spacelift API key id"
+  api_key_secret:
+    required: true
+    description: "Spacelift API key secret"
+  github_token:
+    required: true
+    description: "GitHub Token"
 outputs:
-  result1:
-    description: "Output result placeholder"
-    value: "${{ steps.context.outputs.action-result }}"
+  webapp-url:
+    description: "Web Application url"
+    value: https://${{ steps.webapp.outputs.output }}
 runs:
   using: "composite"
   steps:
-    - id: context
-      shell: bash
-      run: |
-          echo "::set-output name=action-result::${{ inputs.param1 }}"
+    - uses: stephenbawks/aws-ssm-parameter@v1.0.0
+      with:
+        name: ${{ inputs.ssm-path }}
+        value: ${{ inputs.image }}:${{ inputs.image-tag }}
+        description: Image deploy on ecs
+      env:
+        AWS_REGION: ${{ inputs.region }}
 
+    - uses: cloudposse/github-action-spacelift-deploy@0.1.0
+      id: spacelift
+      with:
+        stack: ${{ inputs.stack }}
+        github_token: ${{ inputs.github_token }}
+        organization: ${{ inputs.organization }}
+        api_key_id: ${{ inputs.api_key_id }}
+        api_key_secret: ${{ inputs.api_key_secret }}
+
+    - uses: edwardgeorge/jq-action@main
+      id: webapp
+      with:
+        compact: true
+        raw-output: true
+        input: ${{ steps.spacelift.outputs.outputs }}
+        script: 'map(select(.id == "full_domain")) | .[0].value'
