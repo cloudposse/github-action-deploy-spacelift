@@ -1,16 +1,16 @@
-name: 'Deploy ECS'
-description: 'Deploy on ECS with Spacelift'
+name: 'Deploy Docker image app with Spacelift'
+description: 'Opinionated way to deploy Docker image with Spacelift'
 author: hello@cloudposse.com
 branding:
-  icon: 'file-text'
+  icon: 'underline'
   color: 'white'
 inputs:
   stack:
     required: true
-    description: "Name"
+    description: Spacelift stack name
   ssm-path:
-    description: SSM path
     required: false
+    description: SSM path for Docker image
   region:
     description: AWS Region
     required: true
@@ -18,7 +18,7 @@ inputs:
     description: Namespace
     required: false
   operation:
-    description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
+    description: Operation (valid options - `deploy`, `destroy`)
     required: true
     default: deploy
   image:
@@ -33,13 +33,17 @@ inputs:
     required: false
   organization:
     required: true
-    description: "Spacelift organization"
+    description: Spacelift organization name
+  webapp-output-name:
+    required: false
+    description: "Spacelist stack output field contains webapp host name"
+    default: "full_domain"
   api_key_id:
     required: true
-    description: "Spacelift API key id"
+    description: "Spacelift API Key ID"
   api_key_secret:
     required: true
-    description: "Spacelift API key secret"
+    description: "Spacelift API Key Secret"
   github_token:
     required: true
     description: "GitHub Token"
@@ -54,7 +58,7 @@ runs:
       with:
         name: ${{ inputs.ssm-path }}
         value: ${{ inputs.image }}:${{ inputs.image-tag }}
-        description: Image deploy on ecs
+        description: Set Docker Image
       env:
         AWS_REGION: ${{ inputs.region }}
 
@@ -73,4 +77,4 @@ runs:
         compact: true
         raw-output: true
         input: ${{ steps.spacelift.outputs.outputs }}
-        script: 'map(select(.id == "full_domain")) | .[0].value'
+        script: 'map(select(.id == "${{ inputs.webapp-output-name }}")) | .[0].value'

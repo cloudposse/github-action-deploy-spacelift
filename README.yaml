@@ -5,7 +5,7 @@
 #
 
 # Name of this project
-name: example-github-action-composite
+name: github-action-deploy-spacelift
 
 # Tags of this project
 tags:
@@ -18,25 +18,30 @@ tags:
 license: "APACHE2"
 
 # Canonical GitHub repo
-github_repo: cloudposse/example-github-action-composite
+github_repo: cloudposse/github-action-deploy-spacelift
 
 # Badges to display
 badges:
   - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/example-github-action-composite.svg"
-    url: "https://github.com/cloudposse/example-github-action-composite/releases/latest"
+    image: "https://img.shields.io/github/release/cloudposse/github-action-deploy-spacelift.svg"
+    url: "https://github.com/cloudposse/github-action-deploy-spacelift/releases/latest"
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
 
-related: []
+related:
+  - name: "github-action-deploy-helmfile"
+    description: "Deploy on Kubernetes with Helmfile"
+    url: "https://github.com/cloudposse/github-action-deploy-helmfile"
+  - name: "github-action-spacelift-stack-deploy"
+    description: "Deploy Spacelift Stack"
+    url: "https://github.com/cloudposse/github-action-spacelift-stack-deploy"
 
 # Short description of this project
-description: Template repository of composite GitHub Action
+description: Opinionated way to deploy Docker image app with Spacelift
 
 introduction: |-
-  This is template repository to create composite GitHub Actions. 
-  Feel free to use it as reference and starting point.
+  Set Docker image uri into SSM parameter store and trigger Spacelift stack that should handle deployment.
 
 references:
   - name: "github-actions-workflows"
@@ -56,17 +61,36 @@ usage: |-
         types: [opened, synchronize, reopened, closed, labeled, unlabeled]
 
     jobs:
-      context:
+      deploy:
         runs-on: ubuntu-latest
+        environment:
+          name: production
+          url: ${{ steps.deploy.outputs.webapp-url }}
         steps:
-          - name: Example action
-            uses: cloudposse/example-github-action-composite@main
-            id: example
+          - name: Configure AWS Credentials
+            uses: aws-actions/configure-aws-credentials@v1.7.0
             with:
-              param1: true
-  
+              aws-region: us-west-2
+              role-to-assume: arn:aws:iam::123456789012:role/AllowWriteSSM
+    
+          - name: Deploy
+            uses: cloudposse/github-action-deploy-spacelift@main
+            id: deploy
+            with:
+              stack: ecs-service-production
+              region: us-west-2
+              ssm-path: /ecs-service/image
+              image: nginx
+              image-tag: latest
+              operation: deploy
+              debug: false
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              organization: acme
+              api_key_id: ${{ secrets.SPACELIFT_API_KEY_ID }}
+              api_key_secret: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
+
         outputs:
-          result: ${{ steps.example.outputs.result1 }}
+          url: ${{ steps.deploy.outputs.webapp-url }}
   ```
 
 include:
