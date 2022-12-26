@@ -38,7 +38,7 @@ jobs:
         with:
           stack: plat-ue2-sandbox-test-github-action
           region: us-east-2
-          ssm-path: /cp/prod/app/database/master_password
+          ssm-path: /test-github-action/image
           image: nginx
           image-tag: latest
           webapp-output-name: full_host
