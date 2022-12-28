@@ -19,7 +19,7 @@ jobs:
         run: echo "Do setup"
 
       - id: random
-        uses: aammirmirza/RandomPasswordGenerator@v1.1
+        uses: aammirmirza/RandomPasswordGenerator@1.2
         with:
           length: 15
 
