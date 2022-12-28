@@ -54,7 +54,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: stephenbawks/aws-ssm-parameter@v1.0.0
+    - uses: stephenbawks/aws-ssm-parameter@v1.9.3
       with:
         name: ${{ inputs.ssm-path }}
         value: ${{ inputs.image }}:${{ inputs.image-tag }}
