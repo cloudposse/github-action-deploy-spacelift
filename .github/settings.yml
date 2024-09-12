@@ -5,3 +5,4 @@ repository:
   description: Deploy Docker image application with Spacelift
   homepage: https://cloudposse.com/accelerate
   topics: ""
+
