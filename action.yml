@@ -62,7 +62,7 @@ runs:
       env:
         AWS_REGION: ${{ inputs.region }}
 
-    - uses: cloudposse/github-action-spacelift-stack-deploy@0.1.2
+    - uses: cloudposse/github-action-spacelift-stack-deploy@0.1.4
       id: spacelift
       with:
         stack: ${{ inputs.stack }}
